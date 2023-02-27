@@ -1,21 +1,21 @@
-const express = require("express");
+require("dotenv").config();
 require("./database/dbConnection");
+const express = require("express");
 const cors = require("cors");
-
+const userRoutes = require("./routes/userRoutes");
 const app = express();
-const port = 8000;
+const port = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("This is a server for Wordify and it is up and running...");
 });
 
-app.get("/posts", (req, res) => {
-  res.send("This is a post routes");
-});
+//User Routes
+app.use("/user", userRoutes);
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);
