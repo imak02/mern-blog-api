@@ -1,11 +1,25 @@
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const errorHandler = require("../utils/errorHandler");
+const registerValidatorSchema = require("../utils/registerValidator");
 
 //Create a new user (Register a new user)
-const addUser = async (req, res) => {
+const register = async (req, res) => {
   try {
-    const { name, userName, email, password } = req.body;
+    // const { name, userName, email, password } = req.body;
+    const { error, value } = registerValidatorSchema.validate(req.body);
+    console.log(req.body);
+    // return false;
+
+    if (error) {
+      return res.status(400).send({
+        success: false,
+        message: error.details[0].message,
+        data: null,
+      });
+    }
+
+    let { fullName: name, userName, email, password1: password } = await value;
 
     const emailAlreadyExists = await User.exists({ email: email.trim() });
     if (emailAlreadyExists) {
@@ -141,4 +155,4 @@ const getCurrentUser = async (req, res, next) => {
   }
 };
 
-module.exports = { addUser, loginUser, getUser, getCurrentUser };
+module.exports = { register, loginUser, getUser, getCurrentUser };
