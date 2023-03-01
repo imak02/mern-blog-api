@@ -1,5 +1,28 @@
+const multer = require("multer");
 const Blog = require("../models/Blog");
 const errorHandler = require("../utils/errorHandler");
+const { multerStorage, multerFilter } = require("../utils/multer");
+
+//File Upload logic
+const upload = multer({
+  dest: "uploads/",
+  storage: multerStorage,
+  fileFilter: multerFilter,
+  //If you want to limit file size, use this
+  //   limits: {
+  //     fileSize: 1024 * 1024,
+  //   },
+});
+const uploadBlogImage = upload.single("image");
+
+const imageMiddleware = async (req, res, next) => {
+  uploadBlogImage(req, res, (error) => {
+    if (error) {
+      return errorHandler({ message: error.message, res });
+    }
+    next();
+  });
+};
 
 //Get all blogs
 const getBlogs = async (req, res) => {
@@ -31,6 +54,7 @@ const createBlog = async (req, res) => {
     const createdBlog = await Blog.create({
       title,
       description,
+      image: req.file ? `/${req.file.path}` : null,
       content,
     });
 
@@ -71,4 +95,10 @@ const getBlog = async (req, res) => {
   }
 };
 
-module.exports = { getBlogs, createBlog, getBlog };
+module.exports = {
+  getBlogs,
+  createBlog,
+  getBlog,
+  uploadBlogImage,
+  imageMiddleware,
+};

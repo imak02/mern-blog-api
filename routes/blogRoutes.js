@@ -1,5 +1,13 @@
 const express = require("express");
-const { getBlogs, createBlog, getBlog } = require("../handlers/blogHandler");
+const multer = require("multer");
+const {
+  getBlogs,
+  createBlog,
+  getBlog,
+  uploadBlogImage,
+  imageMiddleware,
+} = require("../handlers/blogHandler");
+const storage = require("../utils/multer");
 
 const router = express.Router();
 
@@ -10,6 +18,6 @@ router.get("/", getBlogs);
 router.get("/:blogId", getBlog);
 
 //Create a new blog
-router.post("/new", createBlog);
+router.post("/new", imageMiddleware, createBlog);
 
 module.exports = router;
