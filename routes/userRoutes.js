@@ -5,9 +5,13 @@ const {
   getCurrentUser,
   register,
 } = require("../handlers/userHandler");
-const checkAuth = require("../middlewares/checkAuth");
+
+const { checkAuth } = require("../middlewares/checkAuth");
 
 const router = express.Router();
+
+//Get current User
+router.get("/current-user", checkAuth, getCurrentUser);
 
 //Register User
 router.post("/register", register);
@@ -17,8 +21,5 @@ router.post("/login", loginUser);
 
 //Get User By id
 router.get("/:userId", getUser);
-
-//Get current User
-router.get("/current", checkAuth, getCurrentUser);
 
 module.exports = router;

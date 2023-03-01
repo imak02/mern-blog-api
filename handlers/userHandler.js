@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const User = require("../models/User");
+const bcrypt = require("bcrypt");
 const errorHandler = require("../utils/errorHandler");
 const registerValidatorSchema = require("../utils/registerValidator");
 
@@ -8,8 +9,6 @@ const register = async (req, res) => {
   try {
     // const { name, userName, email, password } = req.body;
     const { error, value } = registerValidatorSchema.validate(req.body);
-    console.log(req.body);
-    // return false;
 
     if (error) {
       return res.status(400).send({

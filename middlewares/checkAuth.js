@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const errorHandler = require("../utils/errorHandler");
 
-const checkAuth = async (req, res, next) => {
+exports.checkAuth = async (req, res, next) => {
   try {
     if (!req.headers.authorization) {
       return res.status(400).send({
@@ -33,5 +34,3 @@ const checkAuth = async (req, res, next) => {
     errorHandler({ error, res });
   }
 };
-
-module.exports = checkAuth;
