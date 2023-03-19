@@ -15,9 +15,6 @@ const multerStorage = multer.diskStorage({
     const ext = file.mimetype.split("/")[1];
     cb(null, "blogImg" + "-" + uniqueSuffix + "." + ext);
   },
-  limits: {
-    fileSize: 1024 * 1024,
-  },
 });
 
 const multerFilter = function (req, file, cb) {

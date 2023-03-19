@@ -1,4 +1,5 @@
 const multer = require("multer");
+const User = require("../models/User");
 const Blog = require("../models/Blog");
 const errorHandler = require("../utils/errorHandler");
 const { multerStorage, multerFilter } = require("../utils/multer");
@@ -27,7 +28,7 @@ const imageMiddleware = async (req, res, next) => {
 //Get all blogs
 const getBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find();
+    const blogs = await Blog.find().populate("author", "name");
 
     if (!blogs) {
       return res.status(400).send({
@@ -50,15 +51,21 @@ const getBlogs = async (req, res) => {
 const createBlog = async (req, res) => {
   try {
     const { title, description, content } = req.body;
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    // const author = user.name;
 
     const createdBlog = await Blog.create({
       title,
       description,
       image: req.file ? `/${req.file.path}` : null,
       content,
+      author: userId,
     });
 
     if (createdBlog) {
+      user.blogs.push(createdBlog);
+      user.save();
       return res.status(200).send({
         success: true,
         message: "Blog created successfully",
@@ -75,7 +82,8 @@ const getBlog = async (req, res) => {
   try {
     const blogId = req.params.blogId;
 
-    const foundBlog = await Blog.findById(blogId);
+    const foundBlog = await Blog.findById(blogId).populate("author", "name");
+    console.log(foundBlog);
 
     if (!foundBlog) {
       return res.status(400).send({

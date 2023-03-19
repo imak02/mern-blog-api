@@ -1,13 +1,12 @@
 const express = require("express");
-const multer = require("multer");
 const {
   getBlogs,
   createBlog,
   getBlog,
-  uploadBlogImage,
   imageMiddleware,
 } = require("../handlers/blogHandler");
-const storage = require("../utils/multer");
+
+const { checkAuth } = require("../middlewares/checkAuth");
 
 const router = express.Router();
 
@@ -15,9 +14,9 @@ const router = express.Router();
 router.get("/", getBlogs);
 
 //Get blog by id
-router.get("/:blogId", getBlog);
+router.get("/:blogId", checkAuth, getBlog);
 
 //Create a new blog
-router.post("/new", imageMiddleware, createBlog);
+router.post("/new", checkAuth, imageMiddleware, createBlog);
 
 module.exports = router;
