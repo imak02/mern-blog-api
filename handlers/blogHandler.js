@@ -83,7 +83,6 @@ const getBlog = async (req, res) => {
     const blogId = req.params.blogId;
 
     const foundBlog = await Blog.findById(blogId).populate("author", "name");
-    console.log(foundBlog);
 
     if (!foundBlog) {
       return res.status(400).send({
@@ -103,10 +102,67 @@ const getBlog = async (req, res) => {
   }
 };
 
+//Edit blog
+const editBlog = async (req, res) => {
+  try {
+    const blogId = req.params.blogId;
+    const { title, description, content } = req.body;
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+
+    const editedBlog = await Blog.findByIdAndUpdate(
+      { _id: blogId },
+      {
+        title,
+        description,
+        image: req.file && `/${req.file.path}`,
+        content,
+        author: userId,
+      },
+      { new: true }
+    );
+
+    if (editedBlog) {
+      return res.status(200).send({
+        success: true,
+        message: "Blog edited successfully",
+        data: editedBlog,
+      });
+    }
+  } catch (error) {
+    errorHandler({ error, res });
+  }
+};
+
+//Delete the blog
+const deleteBlog = async (req, res) => {
+  try {
+    const blogId = req.params.blogId;
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+
+    const deleted = await Blog.findByIdAndDelete(blogId);
+
+    if (deleted) {
+      user.blogs.pop(deleted);
+      user.save();
+      return res.status(200).send({
+        success: true,
+        message: "Blog deleted successfully.",
+        data: null,
+      });
+    }
+  } catch (error) {
+    errorHandler({ error, res });
+  }
+};
+
 module.exports = {
   getBlogs,
   createBlog,
   getBlog,
+  editBlog,
+  deleteBlog,
   uploadBlogImage,
   imageMiddleware,
 };
