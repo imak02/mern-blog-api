@@ -117,7 +117,7 @@ const editBlog = async (req, res) => {
       {
         title,
         description,
-        tags,
+        tags: tags.split(","),
         image: req.file && `/${req.file.path}`,
         content,
         author: userId,
