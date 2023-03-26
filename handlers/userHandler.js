@@ -108,7 +108,7 @@ const loginUser = async (req, res, next) => {
 const getUser = async (req, res, next) => {
   try {
     const userId = req.params.userId;
-    const foundUser = await User.findById(userId);
+    const foundUser = await User.findById(userId).populate("blogs");
 
     if (!foundUser) {
       return res.status(400).send({

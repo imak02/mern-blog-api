@@ -9,6 +9,11 @@ const blogSchema = new mongoose.Schema(
     description: {
       type: String,
     },
+    tags: [
+      {
+        type: String,
+      },
+    ],
     image: {
       type: String,
     },

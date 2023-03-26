@@ -50,7 +50,8 @@ const getBlogs = async (req, res) => {
 //Create a new blog
 const createBlog = async (req, res) => {
   try {
-    const { title, description, content } = req.body;
+    const { title, description, tags, content } = req.body;
+
     const userId = req.user._id;
     const user = await User.findById(userId);
     // const author = user.name;
@@ -58,6 +59,7 @@ const createBlog = async (req, res) => {
     const createdBlog = await Blog.create({
       title,
       description,
+      tags: tags.split(","),
       image: req.file ? `/${req.file.path}` : null,
       content,
       author: userId,
@@ -106,7 +108,7 @@ const getBlog = async (req, res) => {
 const editBlog = async (req, res) => {
   try {
     const blogId = req.params.blogId;
-    const { title, description, content } = req.body;
+    const { title, description, tags, content } = req.body;
     const userId = req.user._id;
     const user = await User.findById(userId);
 
@@ -115,6 +117,7 @@ const editBlog = async (req, res) => {
       {
         title,
         description,
+        tags,
         image: req.file && `/${req.file.path}`,
         content,
         author: userId,
