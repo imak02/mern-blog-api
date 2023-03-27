@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const userRoutes = require("./routes/userRoutes");
 const blogRoutes = require("./routes/blogRoutes");
+const commentRoutes = require("./routes/commentRoutes");
 const app = express();
 const path = require("path");
 const port = process.env.PORT || 8000;
@@ -21,6 +22,9 @@ app.use("/user", userRoutes);
 
 //Blog Routes
 app.use("/blog", blogRoutes);
+
+//Comment Routes
+app.use("/comment", commentRoutes);
 
 //Uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
