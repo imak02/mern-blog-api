@@ -2,12 +2,12 @@ const multer = require("multer");
 const User = require("../models/User");
 const Blog = require("../models/Blog");
 const errorHandler = require("../utils/errorHandler");
-const { multerStorage, multerFilter } = require("../utils/multer");
+const { multerFilter, blogMulterStorage } = require("../utils/multer");
 
 //File Upload logic
 const upload = multer({
-  dest: "uploads/",
-  storage: multerStorage,
+  dest: "uploads/blog",
+  storage: blogMulterStorage,
   fileFilter: multerFilter,
   //If you want to limit file size, use this
   //   limits: {
@@ -16,7 +16,7 @@ const upload = multer({
 });
 const uploadBlogImage = upload.single("image");
 
-const imageMiddleware = async (req, res, next) => {
+const blogImageMiddleware = async (req, res, next) => {
   uploadBlogImage(req, res, (error) => {
     if (error) {
       return errorHandler({ message: error.message, res });
@@ -28,7 +28,7 @@ const imageMiddleware = async (req, res, next) => {
 //Get all blogs
 const getBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find().populate("author", "name");
+    const blogs = await Blog.find().populate("author", "name profilePic");
 
     if (!blogs) {
       return res.status(400).send({
@@ -169,5 +169,5 @@ module.exports = {
   editBlog,
   deleteBlog,
   uploadBlogImage,
-  imageMiddleware,
+  blogImageMiddleware,
 };

@@ -3,9 +3,9 @@ const {
   getBlogs,
   createBlog,
   getBlog,
-  imageMiddleware,
   deleteBlog,
   editBlog,
+  blogImageMiddleware,
 } = require("../handlers/blogHandler");
 
 const { checkAuth } = require("../middlewares/checkAuth");
@@ -19,10 +19,10 @@ router.get("/", getBlogs);
 router.get("/:blogId", getBlog);
 
 //Create a new blog
-router.post("/new", checkAuth, imageMiddleware, createBlog);
+router.post("/new", checkAuth, blogImageMiddleware, createBlog);
 
 //Edit a blog
-router.put("/:blogId", checkAuth, imageMiddleware, editBlog);
+router.put("/:blogId", checkAuth, blogImageMiddleware, editBlog);
 
 //Delete a blog
 router.delete("/:blogId", checkAuth, deleteBlog);

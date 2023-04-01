@@ -3,6 +3,25 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const errorHandler = require("../utils/errorHandler");
 const registerValidatorSchema = require("../utils/registerValidator");
+const multer = require("multer");
+const { multerFilter, profileMulterStorage } = require("../utils/multer");
+
+//File Upload logic
+const upload = multer({
+  dest: "uploads/user",
+  storage: profileMulterStorage,
+  fileFilter: multerFilter,
+});
+const uploadProfilePic = upload.single("profilePic");
+
+const profilePicMiddleware = async (req, res, next) => {
+  uploadProfilePic(req, res, (error) => {
+    if (error) {
+      return errorHandler({ message: error.message, res });
+    }
+    next();
+  });
+};
 
 //Create a new user (Register a new user)
 const register = async (req, res) => {
@@ -154,4 +173,65 @@ const getCurrentUser = async (req, res, next) => {
   }
 };
 
-module.exports = { register, loginUser, getUser, getCurrentUser };
+//Update user profile
+const updateUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { name, userName, email, bio } = req.body;
+
+    const emailAlreadyExists = await User.findOne({ email: email.trim() });
+    if (emailAlreadyExists) {
+      if (emailAlreadyExists._id.toString() !== userId) {
+        return res.status(400).send({
+          success: false,
+          message: "Email is already registered.",
+          data: null,
+        });
+      }
+    }
+
+    const userNameNotAvailable = await User.findOne({
+      userName: userName.trim(),
+    });
+    if (userNameNotAvailable) {
+      if (userNameNotAvailable._id.toString() !== userId) {
+        return res.status(400).send({
+          success: false,
+          message: "Username is already taken.",
+          data: null,
+        });
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      { _id: userId },
+      {
+        profilePic: req.file && `/${req.file.path}`,
+        name,
+        userName,
+        email,
+        bio,
+      },
+      { new: true }
+    );
+
+    if (updatedUser) {
+      return res.status(200).send({
+        success: true,
+        message: "Profile updated successfully",
+        data: updatedUser,
+      });
+    }
+  } catch (error) {
+    errorHandler({ error, res });
+  }
+};
+
+module.exports = {
+  register,
+  loginUser,
+  getUser,
+  getCurrentUser,
+  updateUser,
+  profilePicMiddleware,
+};
