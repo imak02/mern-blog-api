@@ -59,11 +59,13 @@ const register = async (req, res) => {
       });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 12);
+
     const newUser = await User.create({
       name,
       userName,
       email,
-      password,
+      password: hashedPassword,
     });
 
     if (newUser) {
@@ -227,11 +229,61 @@ const updateUser = async (req, res) => {
   }
 };
 
+//Change Password
+const changePassword = async (req, res) => {
+  try {
+    const user = req.user;
+    const userId = user._id;
+    const { oldP, newP } = req.body;
+
+    const foundUser = await User.findOne({
+      userId,
+    }).select(["userName", "email", "password"]);
+
+    if (!foundUser) {
+      return res.status(400).send({
+        success: false,
+        message: "User does not exist.",
+        data: null,
+      });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(oldP, foundUser.password);
+
+    if (!isPasswordCorrect) {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid credentials",
+        data: null,
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newP, 12);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { password: hashedPassword },
+      { returnDocument: "after" }
+    );
+
+    if (updatedUser) {
+      return res.status(200).send({
+        success: true,
+        message: "Password changed successfully",
+        data: null,
+      });
+    }
+  } catch (error) {
+    errorHandler({ error, res });
+  }
+};
+
 module.exports = {
   register,
   loginUser,
   getUser,
   getCurrentUser,
   updateUser,
+  changePassword,
   profilePicMiddleware,
 };

@@ -31,14 +31,14 @@ const userSchema = new mongoose.Schema({
   blogs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Blog" }],
 });
 
-userSchema.pre("save", async function (next) {
-  //Works if password is modified
-  if (this.isModified("password")) {
-    const hashedPassword = await bcrypt.hash(this.password, 12);
-    this.password = hashedPassword;
-  }
-  next();
-});
+// userSchema.pre("save", async function (next) {
+//   //Works if password is modified
+//   if (this.isModified("password")) {
+//     const hashedPassword = await bcrypt.hash(this.password, 12);
+//     this.password = hashedPassword;
+//   }
+//   next();
+// });
 
 userSchema.methods.generateToken = function () {
   const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, {

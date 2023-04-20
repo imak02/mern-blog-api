@@ -6,6 +6,7 @@ const {
   register,
   updateUser,
   profilePicMiddleware,
+  changePassword,
 } = require("../handlers/userHandler");
 
 const { checkAuth } = require("../middlewares/checkAuth");
@@ -25,6 +26,9 @@ router.post("/login", loginUser);
 router.get("/:userId", getUser);
 
 //Update user profile
-router.post("/update/:userId", profilePicMiddleware, updateUser);
+router.post("/update/:userId", checkAuth, profilePicMiddleware, updateUser);
+
+//Change Password
+router.patch("/changePassword/:userId", checkAuth, changePassword);
 
 module.exports = router;
