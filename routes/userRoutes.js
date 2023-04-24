@@ -7,6 +7,8 @@ const {
   updateUser,
   profilePicMiddleware,
   changePassword,
+  verifyEmail,
+  resendVerificationEmail,
 } = require("../handlers/userHandler");
 
 const { checkAuth } = require("../middlewares/checkAuth");
@@ -18,6 +20,12 @@ router.get("/current-user", checkAuth, getCurrentUser);
 
 //Register User
 router.post("/register", register);
+
+//Verify Email Address
+router.get("/verify", verifyEmail);
+
+//Resend Email Address verification link
+router.get("/resend-link", checkAuth, resendVerificationEmail);
 
 //Login User
 router.post("/login", loginUser);

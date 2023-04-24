@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema({
@@ -28,6 +29,8 @@ const userSchema = new mongoose.Schema({
     required: true,
     select: false,
   },
+  emailVerified: { type: Boolean, default: false },
+  emailVerifyToken: { type: String },
   blogs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Blog" }],
 });
 
@@ -39,6 +42,15 @@ const userSchema = new mongoose.Schema({
 //   }
 //   next();
 // });
+
+userSchema.methods.generateEmailVerifyToken = function () {
+  const token = crypto.randomBytes(20).toString("hex");
+  const expiration = Date.now() + 30 * 60 * 1000;
+  const emailVerifyToken = token + ":" + expiration;
+  this.emailVerifyToken = emailVerifyToken;
+
+  return emailVerifyToken;
+};
 
 userSchema.methods.generateToken = function () {
   const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, {

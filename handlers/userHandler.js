@@ -5,6 +5,7 @@ const errorHandler = require("../utils/errorHandler");
 const registerValidatorSchema = require("../utils/registerValidator");
 const multer = require("multer");
 const { multerFilter, profileMulterStorage } = require("../utils/multer");
+const sendMail = require("../utils/nodeMailer");
 
 //File Upload logic
 const upload = multer({
@@ -68,10 +69,21 @@ const register = async (req, res) => {
       password: hashedPassword,
     });
 
+    const token = newUser.generateEmailVerifyToken();
+    newUser.save();
+
+    sendMail({
+      to: email,
+      subject: "Email Verification",
+      text: "Please verify your mail to continue.",
+      html: `Please click <a href="http://localhost:8000/user/verify?token=${token}">here</a> to verify your email address. This link will expire in 30 minutes.`,
+    });
+
     if (newUser) {
       return res.status(200).send({
         success: true,
-        message: "User registered successfully",
+        message:
+          "User registered successfully. Please check your email for verification link.",
         data: {
           name: newUser.name,
           userName: newUser.userName,
@@ -79,6 +91,73 @@ const register = async (req, res) => {
         },
       });
     }
+  } catch (error) {
+    errorHandler({ error, res });
+  }
+};
+
+//Verify email address
+const verifyEmail = async (req, res) => {
+  const { token } = req.query;
+  const [tokenValue, expiration] = token.split(":");
+
+  console.log(tokenValue);
+
+  if (!tokenValue || !expiration) {
+    return res
+      .status(400)
+      .send({ success: false, message: "Invalid token", data: null });
+  }
+
+  const expirationTime = parseInt(expiration);
+
+  if (expirationTime < Date.now()) {
+    res
+      .status(400)
+      .send({ success: false, message: "Token has expired", data: null });
+    return;
+  }
+
+  try {
+    const verifiedUser = await User.findOneAndUpdate(
+      { emailVerifyToken: token },
+      { emailVerified: true, emailVerifyToken: null },
+      { new: true }
+    );
+
+    console.log(verifiedUser);
+
+    if (verifiedUser) {
+      res.status(200).send("Email Address verified!!!");
+    }
+  } catch (error) {
+    errorHandler({ error, res });
+  }
+};
+
+//Resend verification email
+const resendVerificationEmail = async (req, res) => {
+  const user = req.user;
+  const userId = user._id;
+  try {
+    const foundUser = await User.findById(userId);
+    const email = foundUser.email;
+    console.log(foundUser);
+    const token = await foundUser.generateEmailVerifyToken();
+    foundUser.save();
+
+    sendMail({
+      to: email,
+      subject: "Email Verification",
+      text: "Please verify your mail to continue.",
+      html: `Please click <a href="http://localhost:8000/user/verify?token=${token}">here</a> to verify your email address. This link will expire in 30 minutes.`,
+    });
+
+    return res.status(200).send({
+      success: true,
+      message: "Please check your email for verification link",
+      data: email,
+    });
   } catch (error) {
     errorHandler({ error, res });
   }
@@ -192,6 +271,14 @@ const updateUser = async (req, res) => {
       }
     }
 
+    //Checking if email is updated or same to change the verification status
+    const foundUser = await User.findById(userId);
+    if (foundUser.email !== email.trim()) {
+      emailVerified = false;
+    } else {
+      emailVerified = foundUser.emailVerified;
+    }
+
     const userNameNotAvailable = await User.findOne({
       userName: userName.trim(),
     });
@@ -213,6 +300,7 @@ const updateUser = async (req, res) => {
         userName,
         email,
         bio,
+        emailVerified,
       },
       { new: true }
     );
@@ -280,6 +368,8 @@ const changePassword = async (req, res) => {
 
 module.exports = {
   register,
+  verifyEmail,
+  resendVerificationEmail,
   loginUser,
   getUser,
   getCurrentUser,
