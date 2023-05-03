@@ -9,6 +9,8 @@ const {
   changePassword,
   verifyEmail,
   resendVerificationEmail,
+  forgotPassword,
+  resetPassword,
 } = require("../handlers/userHandler");
 
 const { checkAuth } = require("../middlewares/checkAuth");
@@ -38,5 +40,11 @@ router.post("/update/:userId", checkAuth, profilePicMiddleware, updateUser);
 
 //Change Password
 router.patch("/changePassword/:userId", checkAuth, changePassword);
+
+//Forgot Password
+router.post("/forgot-password", forgotPassword);
+
+//Reset Password
+router.post("/reset-password", resetPassword);
 
 module.exports = router;

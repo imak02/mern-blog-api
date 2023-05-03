@@ -29,6 +29,9 @@ const userSchema = new mongoose.Schema({
     required: true,
     select: false,
   },
+  otp: {
+    type: Number,
+  },
   emailVerified: { type: Boolean, default: false },
   emailVerifyToken: { type: String },
   blogs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Blog" }],
@@ -50,6 +53,22 @@ userSchema.methods.generateEmailVerifyToken = function () {
   this.emailVerifyToken = emailVerifyToken;
 
   return emailVerifyToken;
+};
+
+userSchema.methods.generateOTP = function () {
+  const OTP = Math.floor(100000 + Math.random() * 900000);
+  this.otp = OTP;
+  // Set a timeout to delete the OTP after 30 minutes (1800000 milliseconds)
+  setTimeout(() => {
+    this.model("User")
+      .findOneAndUpdate(
+        { _id: this._id },
+        { $unset: { otp: 1 } },
+        { new: true }
+      )
+      .exec();
+  }, 300000);
+  return OTP;
 };
 
 userSchema.methods.generateToken = function () {
